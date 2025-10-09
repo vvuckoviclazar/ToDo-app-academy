@@ -13,6 +13,10 @@ var ToDo = function (rootElementAll, rootElementActive, rootElementCompleted) {
   let ToDoItemViewModel = function (toDoItem, views) {
     this.data = toDoItem;
     this.views = views;
+
+    this.toJSON = function () {
+      return this.data;
+    };
   };
 
   let toDoItems = [];
@@ -89,6 +93,8 @@ var ToDo = function (rootElementAll, rootElementActive, rootElementCompleted) {
             toDoViewModel.views[1].parentNode.removeChild(
               toDoViewModel.views[1]
             );
+
+            saveToLocalStorage();
           }
         };
     }
@@ -112,14 +118,41 @@ var ToDo = function (rootElementAll, rootElementActive, rootElementCompleted) {
 
           rootElementActive.appendChild(toDoItemViewModel.views[1]);
         }
+        saveToLocalStorage();
       };
     }
   }
+
+  function saveToLocalStorage() {
+    localStorage.setItem("todo-data", JSON.stringify(toDoItems));
+  }
+
+  function loadFromLocalStorage() {
+    var json = localStorage.getItem("todo-data");
+
+    if (json === null) return;
+
+    let toDoItems = JSON.parse(json, (key, value) => {
+      if (key === "date") {
+        value = new Date(value);
+      }
+      return value;
+    });
+
+    if (toDoItems.length === 0) return;
+
+    for (let i = 0; i < toDoItems.length; i++) {
+      generateToDoItemView(toDoItems[i]);
+    }
+  }
+
+  loadFromLocalStorage();
 
   return {
     add: function (content) {
       let toDoItem = new ToDoItem(content, new Date());
       generateToDoItemView(toDoItem);
+      saveToLocalStorage();
     },
   };
 };
