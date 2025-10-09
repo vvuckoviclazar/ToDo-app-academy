@@ -15,7 +15,7 @@ var ToDo = function (rootElementAll, rootElementActive, rootElementCompleted) {
     this.views = views;
   };
 
-  let toDoItem = [];
+  let toDoItems = [];
 
   const TODO_ITEM_TEMPLATE = `
         <div class="todo-item-date">
@@ -67,8 +67,53 @@ var ToDo = function (rootElementAll, rootElementActive, rootElementCompleted) {
     //register handlers for delete button
     registerDeleteHandlers(toDoItemViewModel);
 
-    //register handlers for click on item
+    // register handlers for click on item
     registerClickHandlers(toDoItemViewModel);
+  }
+
+  function registerDeleteHandlers(toDoViewModel) {
+    for (let i = 0; i < toDoViewModel.views.length; i++) {
+      toDoViewModel.views[i].getElementsByClassName("delete-btn")[0].onclick =
+        function (e) {
+          e.stopPropagation();
+
+          var id = this.dataset.id;
+          var index = toDoItems.findIndex((item) => item.data.id === id);
+
+          if (index > -1) {
+            //remove from array and from DOM
+            toDoItems.splice(index, 1);
+            toDoViewModel.views[0].parentNode.removeChild(
+              toDoViewModel.views[0]
+            );
+            toDoViewModel.views[1].parentNode.removeChild(
+              toDoViewModel.views[1]
+            );
+          }
+        };
+    }
+  }
+
+  function registerClickHandlers(toDoItemViewModel) {
+    for (let i = 0; i < toDoItemViewModel.views.length; i++) {
+      toDoItemViewModel.views[i].onclick = function (e) {
+        var id = this.dataset.id;
+        var index = toDoItems.findIndex((item) => item.data.id === id);
+
+        toDoItemViewModel.data.completed = !toDoItemViewModel.data.completed;
+
+        if (toDoItemViewModel.data.completed) {
+          toDoItemViewModel.views[0].classList.add("completed");
+          toDoItemViewModel.views[1].classList.add("completed");
+          rootElementCompleted.appendChild(toDoItemViewModel.views[1]);
+        } else {
+          toDoItemViewModel.views[0].classList.remove("completed");
+          toDoItemViewModel.views[1].classList.remove("completed");
+
+          rootElementActive.appendChild(toDoItemViewModel.views[1]);
+        }
+      };
+    }
   }
 
   return {
